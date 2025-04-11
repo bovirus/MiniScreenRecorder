@@ -1,84 +1,125 @@
 # Mini Screen Recorder
 
-It's an open-source screen and audio recorder for Windows and Linux.
+An open-source screen and audio recorder for **Windows** and **Linux**, written in Python.
 
 <p align="center">
-  <img src="./Capture.png">
+  <img src="./Capture.png" alt="Mini Screen Recorder UI">
 </p>
 
-## Features
+---
 
-- Select theme
-- Set frame rate
-- Set bitrate
+## 🎯 Features
+
+- Select light/dark theme
+- Set frame rate and bitrate
 - Choose video codec
-- Select output format
-- Select audio device
-- Select recording area
-- Support for multiple monitors
+- Select output format (mp4, mkv)
+- Select audio input device
+- Select screen area or full screen
+- Multi-monitor support
 - Multi-language support
 
-## Video Demo
+---
 
-Just a simple gameplay recorded with this app. Click the badge to watch the video:
+## 🎥 Video Demo
+
+Simple gameplay recorded using this app.  
+Click below to watch:
 
 [![Watch on YouTube](https://img.shields.io/badge/YouTube-Watch%20Video-red?style=for-the-badge&logo=youtube)](https://youtu.be/7Ji-maVmPac)
 
-## Requirements to run the application
+---
 
-### Windows Users
+## ⚙️ How to Run
 
-If you download the packaged .exe file from the [Releases](https://github.com/Lextrack/MiniScreenRecorder/releases) section, you **do not** need to install Python, FFmpeg, or any additional libraries. Everything is included in the executable.
+The main file to run the app on **any platform** is:
 
-But if you want to test on the Windows script (miniscreenrecorder.py) first install the latest version of Python and then run these packages in the CMD:
+```bash
+python app.py
+```
 
-    pip install pillow mss numpy opencv-python screeninfo
+---
 
-### Linux Users
+## 💻 Requirements
 
-You need to have Python 3.x and FFmpeg installed on your system, beside the additional libraries. 
+You need **Python 3.x** and **FFmpeg** installed, along with some additional libraries.
 
-As you suspect, the main file to run the app on Linux it's **miniscreenrecorderLinux.py**.
+> `miniscreenrecorder.py` and `miniscreenrecorderLinux.py` are optional helpers that display platform-specific warnings.
 
-### To run this app you must install these libraries
+---
 
-For Linux (Debian), run this in your terminal:
+### 🪟 Windows
 
-    sudo apt-get update
-    sudo apt install python3
-    sudo apt install python3-pip
-    pip install pillow mss numpy opencv-python screeninfo
-    sudo apt-get install python3-pil.imagetk
+If you're using the packaged `.exe` from the [Releases](https://github.com/Lextrack/MiniScreenRecorder/releases), you **don't need to install anything** — Python, FFmpeg, and all dependencies are bundled.
 
-## How to install FFmpeg for Linux (Debian)
+If you're running the source code, install Python first, then install the dependencies:
 
-  1. Update the package index:
-      ```bash
-      sudo apt update
-      ```
-  2. Install FFmpeg:
-      ```bash
-      sudo apt install ffmpeg
-      ```
-  3. Verify the installation:
-      ```bash
-      ffmpeg -version
-      ```
+```bash
+pip install pillow mss numpy opencv-python screeninfo
+```
 
-## Known issues
+---
 
-### Warning about User Account Control
+### 🐧 Linux (Debian-based: Ubuntu, Mint, etc.)
 
-To prevent Windows UAC prompts from interrupting recording, you should select the second-to-last option, which says **Notify me only when apps try to make changes to my computer (do not dim my desktop)**. Or, if you want, completely disable it.
+#### 1. Install Python and dependencies
 
-### Sometimes, the recording is not as smooth as I would like it to be.
+```bash
+sudo apt-get update
+sudo apt install python3 python3-pip python3-venv python3-tk
+```
 
-Well, there are several experimental settings in the application, but the configuration that gives the **best results** is with the **libx264 codec and the mkv format**.
+#### 2. (Optional) Create and activate a virtual environment
 
-### Why can't I record the system audio?
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
 
-Just activate the Stero Mix in the sound settings (in the Recording tab you can find it).
+#### 3. Install required Python packages
 
-## License
+```bash
+pip install pillow mss numpy opencv-python screeninfo
+```
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+#### 4. Install FFmpeg
+
+```bash
+sudo apt install ffmpeg
+```
+
+To verify the installation:
+
+```bash
+ffmpeg -version
+```
+
+---
+
+## ⚠️ Known Issues
+
+### UAC Prompt (Windows)
+
+To avoid screen dimming while recording, go to *User Account Control Settings* and select:
+
+> **"Notify me only when apps try to make changes to my computer (do not dim my desktop)"**
+
+Or disable UAC entirely (not recommended for most users).
+
+### Choppy Recording
+
+If the recording isn’t smooth, try the following configuration for better results:
+
+- **Codec:** `libx264`
+- **Format:** `mkv`
+
+### System Audio Not Captured
+
+To record system audio on Windows, enable **Stereo Mix** in your Sound settings  
+(*Recording* tab → Right-click → Show Disabled Devices → Enable Stereo Mix).
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
