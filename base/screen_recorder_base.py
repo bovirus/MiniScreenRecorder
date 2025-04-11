@@ -32,7 +32,9 @@ class ScreenRecorderBase(abc.ABC):
         self.logger.info("APPLICATION STARTED")
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.root.title("Mini Screen Recorder")
-        root.resizable(0, 0)
+        
+        self.root.geometry("900x600")
+        self.root.minsize(800, 500)
 
         self.config = ConfigParser()
         self.config_file = 'config.ini'
@@ -167,114 +169,198 @@ class ScreenRecorderBase(abc.ABC):
             messagebox.showinfo(self.t("language_change"), self.t("warning_change_lang"))
             self.root.destroy()
             os.execl(sys.executable, sys.executable, *sys.argv)
-            
+
     def init_ui(self):
-        self.language_label = ttk.Label(self.root, text=self.t("Language") + ":")
+        self.main_frame = ttk.Frame(self.root)
+        self.main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        self.top_panel = ttk.LabelFrame(self.main_frame, text=self.t("app_settings"))
+        self.top_panel.pack(fill=tk.X, padx=5, pady=5)
+ 
+        self.language_label = ttk.Label(self.top_panel, text=self.t("Language") + ":")
         self.language_label.grid(row=0, column=0, padx=10, pady=5, sticky="e")
-        self.language_combo = ttk.Combobox(self.root, values=["English", "Español", "简体中文", "繁體中文", "Italiano", "Français", "हिन्दी", "Deutsch", "Português", "Pусский", 
-                                                              "日本語", "한국어", "Polski", "العربية", "Tiếng Việt", "українська мова", "ไทยกลาง", "Filipino", "Türkçe"], width=25)
+        self.language_combo = ttk.Combobox(self.top_panel, values=["English", "Español", "简体中文", "繁體中文", "Italiano", "Français", 
+                                                                "हिन्दी", "Deutsch", "Português", "Pусский", 
+                                                                "日本語", "한국어", "Polski", "العربية", "Tiếng Việt", 
+                                                                "українська мова", "ไทยกลาง", "Filipino", "Türkçe"], width=25)
         self.language_combo.grid(row=0, column=1, padx=10, pady=5, sticky="w")
         self.language_combo.current(["en-US", "es-CL", "zh-Hans", "zh-Hant", "it-IT", "fr-FR", "hi-IN", "de-DE", "pt-BR", "ru-RU", 
-                                     "ja-JP", "ko-KR", "pl-PL", "ar", "vi-VN", "uk-UA", "th-TH", "fil-PH", "tr-TR"].index(self.translation_manager.language))
+                                    "ja-JP", "ko-KR", "pl-PL", "ar", "vi-VN", "uk-UA", "th-TH", "fil-PH", "tr-TR"].index(self.translation_manager.language))
         self.language_combo.config(state="readonly")
         self.language_combo.bind("<<ComboboxSelected>>", self.change_language)
         
-        self.theme_label = ttk.Label(self.root, text=self.t("theme") + ":")
-        self.theme_label.grid(row=1, column=0, padx=10, pady=5, sticky="e")
-        self.theme_combo = ttk.Combobox(self.root, values=["Dark", "Light", "Dark Blue", "Light Green", "Purple", "Starry Night"], width=25)
-        self.theme_combo.grid(row=1, column=1, padx=10, pady=5, sticky="w")
+        self.theme_label = ttk.Label(self.top_panel, text=self.t("theme") + ":")
+        self.theme_label.grid(row=0, column=2, padx=10, pady=5, sticky="e")
+        self.theme_combo = ttk.Combobox(self.top_panel, values=["Dark", "Light", "Dark Blue", "Light Green", "Purple", "Starry Night"], width=25)
+        self.theme_combo.grid(row=0, column=3, padx=10, pady=5, sticky="w")
         current_theme = self.config.get('Settings', 'theme', fallback='dark')
         theme_index = {"dark": 0, "light": 1, "dark blue": 2, "light green": 3, "purple": 4, "starry night": 5}.get(current_theme, 0)
         self.theme_combo.current(theme_index)
         self.theme_combo.config(state="readonly")
         self.theme_combo.bind("<<ComboboxSelected>>", self.change_theme)
 
-        self.monitor_label = ttk.Label(self.root, text=self.t("monitor") + ":")
-        self.monitor_label.grid(row=2, column=0, padx=10, pady=5, sticky="e")
-        self.monitor_combo = ttk.Combobox(self.root, values=[f"Monitor {i+1}: ({monitor.width}x{monitor.height})" for i, monitor in enumerate(self.monitors)], width=25)
-        self.monitor_combo.grid(row=2, column=1, padx=10, pady=5, sticky="w")
+        self.content_frame = ttk.Frame(self.main_frame)
+        self.content_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        self.left_panel = ttk.Frame(self.content_frame, width=400)
+        self.left_panel.pack(side=tk.LEFT, fill=tk.BOTH, expand=False, padx=5, pady=5)
+        self.left_panel.pack_propagate(False)
+        
+        self.monitor_frame = ttk.LabelFrame(self.left_panel, text=self.t("monitor"))
+        self.monitor_frame.pack(fill=tk.X, padx=10, pady=5)
+        
+        self.monitor_combo = ttk.Combobox(self.monitor_frame, values=[f"Monitor {i+1}: ({monitor.width}x{monitor.height})" for i, monitor in enumerate(self.monitors)], width=45)
+        self.monitor_combo.pack(padx=10, pady=10, fill=tk.X)
         self.monitor_combo.current(0)
         self.monitor_combo.config(state="readonly")
         self.monitor_combo.bind("<<ComboboxSelected>>", self.on_monitor_change)
 
-        self.fps_label = ttk.Label(self.root, text=self.t("framerate") + ":")
-        self.fps_label.grid(row=3, column=0, padx=10, pady=5, sticky="e")
-        self.fps_combo = ttk.Combobox(self.root, values=["30", "60"], width=25)
-        self.fps_combo.grid(row=3, column=1, padx=10, pady=5, sticky="w")
+        self.video_settings_frame = ttk.LabelFrame(self.left_panel, text=self.t("video_settings"))
+        self.video_settings_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        self.fps_frame = ttk.Frame(self.video_settings_frame)
+        self.fps_frame.pack(fill=tk.X, padx=10, pady=5)
+        self.fps_label = ttk.Label(self.fps_frame, text=self.t("framerate") + ":")
+        self.fps_label.pack(side=tk.LEFT, padx=5)
+        self.fps_combo = ttk.Combobox(self.fps_frame, values=["30", "60"], width=10)
+        self.fps_combo.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
         self.fps_combo.current(self.config.getint('Settings', 'fps'))
         self.fps_combo.config(state="readonly")
         self.fps_combo.bind("<<ComboboxSelected>>", self.save_config)
         
-        self.bitrate_label = ttk.Label(self.root, text=self.t("bitrate") + ":")
-        self.bitrate_label.grid(row=4, column=0, padx=10, pady=5, sticky="e")
-        self.bitrate_combo = ttk.Combobox(self.root, values=["1000k", "2000k", "4000k", "6000k", "8000k", "10000k", "15000k", "20000k"], width=25)
-        self.bitrate_combo.grid(row=4, column=1, padx=10, pady=5, sticky="w")
+        self.bitrate_frame = ttk.Frame(self.video_settings_frame)
+        self.bitrate_frame.pack(fill=tk.X, padx=10, pady=5)
+        self.bitrate_label = ttk.Label(self.bitrate_frame, text=self.t("bitrate") + ":")
+        self.bitrate_label.pack(side=tk.LEFT, padx=5)
+        self.bitrate_combo = ttk.Combobox(self.bitrate_frame, values=["1000k", "2000k", "4000k", "6000k", "8000k", "10000k", "15000k", "20000k"], width=10)
+        self.bitrate_combo.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
         self.bitrate_combo.current(self.config.getint('Settings', 'bitrate'))
         self.bitrate_combo.config(state="readonly")
         self.bitrate_combo.bind("<<ComboboxSelected>>", self.save_config)
 
-        self.codec_label = ttk.Label(self.root, text=self.t("video_codec") + ":")
-        self.codec_label.grid(row=5, column=0, padx=10, pady=5, sticky="e")
-        self.codec_combo = ttk.Combobox(self.root, values=["libx264", "libx265"], width=25)
-        self.codec_combo.grid(row=5, column=1, padx=10, pady=5, sticky="w")
+        self.codec_frame = ttk.Frame(self.video_settings_frame)
+        self.codec_frame.pack(fill=tk.X, padx=10, pady=5)
+        self.codec_label = ttk.Label(self.codec_frame, text=self.t("video_codec") + ":")
+        self.codec_label.pack(side=tk.LEFT, padx=5)
+        self.codec_combo = ttk.Combobox(self.codec_frame, values=["libx264", "libx265"], width=10)
+        self.codec_combo.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
         self.codec_combo.current(self.config.getint('Settings', 'codec'))
         self.codec_combo.config(state="readonly")
         self.codec_combo.bind("<<ComboboxSelected>>", self.save_config)
 
-        self.format_label = ttk.Label(self.root, text=self.t("output_format") + ":")
-        self.format_label.grid(row=6, column=0, padx=10, pady=5, sticky="e")
-        self.format_combo = ttk.Combobox(self.root, values=["mkv", "mp4"], width=25)
-        self.format_combo.grid(row=6, column=1, padx=10, pady=5, sticky="w")
+        self.format_frame = ttk.Frame(self.video_settings_frame)
+        self.format_frame.pack(fill=tk.X, padx=10, pady=5)
+        self.format_label = ttk.Label(self.format_frame, text=self.t("output_format") + ":")
+        self.format_label.pack(side=tk.LEFT, padx=5)
+        self.format_combo = ttk.Combobox(self.format_frame, values=["mkv", "mp4"], width=10)
+        self.format_combo.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
         self.format_combo.current(self.config.getint('Settings', 'format'))
         self.format_combo.config(state="readonly")
         self.format_combo.bind("<<ComboboxSelected>>", self.save_config)
+
+        self.audio_settings_frame = ttk.LabelFrame(self.left_panel, text=self.t("audio_settings"))
+        self.audio_settings_frame.pack(fill=tk.X, padx=10, pady=5)
         
-        self.audio_label = ttk.Label(self.root, text=self.t("audio_device") + ":")
-        self.audio_label.grid(row=7, column=0, padx=10, pady=5, sticky="e")
-        self.audio_combo = ttk.Combobox(self.root, values=self.audio_devices, width=25)
-        self.audio_combo.grid(row=7, column=1, padx=10, pady=5, sticky="w")
+        self.audio_label = ttk.Label(self.audio_settings_frame, text=self.t("audio_device") + ":")
+        self.audio_label.pack(anchor=tk.W, padx=10, pady=(10,2))
+        
+        self.audio_combo = ttk.Combobox(self.audio_settings_frame, values=self.audio_devices, width=45)
+        self.audio_combo.pack(padx=10, pady=(0,10), fill=tk.X)
         self.audio_combo.current(self.config.getint('Settings', 'audio'))
         self.audio_combo.config(state="readonly")
         self.audio_combo.bind("<<ComboboxSelected>>", self.save_config)
-        if self.audio_devices:
-            self.audio_combo.current(0)
-        else:
-            messagebox.showerror(self.t("error"), self.t("error_no_audio_devices"))
-
-        self.volume_label = ttk.Label(self.root, text=self.t("volume") + ":")
-        self.volume_label.grid(row=8, column=0, padx=10, pady=5, sticky="e")
-        self.volume_scale = ttk.Scale(self.root, from_=0, to=100, orient=tk.HORIZONTAL)
-        self.volume_scale.set(100)
-        self.volume_scale.grid(row=8, column=1, padx=10, pady=5, sticky="w")
-
-        self.toggle_btn = ttk.Button(self.root, text=self.t("start_recording"), command=self.toggle_recording)
-        self.toggle_btn.grid(row=9, column=0, columnspan=2, pady=2)
-
-        self.open_folder_btn = ttk.Button(self.root, text=self.t("open_output_folder"), command=self.open_output_folder)
-        self.open_folder_btn.grid(row=10, column=0, columnspan=2, pady=2)
-
-        self.select_area_btn = ttk.Button(self.root, text=self.t("select_recording_area"), command=self.select_area)
-        self.select_area_btn.grid(row=11, column=0, columnspan=2, pady=2)
-
-        self.preview_btn = ttk.Button(self.root, text=self.t("start_preview"), command=self.toggle_preview_monitor)
-        self.preview_btn.grid(row=12, column=0, columnspan=2, pady=2)
-
-        self.preview_frame = ttk.Frame(self.root)
-        self.preview_frame.grid(row=13, column=0, columnspan=2, pady=5, padx=10)
-        self.preview_label = ttk.Label(self.preview_frame)
-        self.preview_label.pack()
-
-        self.timer_label = ttk.Label(self.root, text="00:00:00")
-        self.timer_label.grid(row=14, column=0, columnspan=2, pady=10)
-        self.timer_label.config(font=("Arial", 13))
-
-        self.info_btn = ttk.Button(self.root, text=self.t("about"), command=self.show_info)
-        self.info_btn.grid(row=15, column=0, columnspan=2, pady=2)
-
-        self.status_label = ttk.Label(self.root, text=self.t("status_ready"))
-        self.status_label.grid(row=16, column=0, columnspan=2, pady=5)
-        self.status_label.config(font=("Arial", 10))
         
+        self.volume_frame = ttk.Frame(self.audio_settings_frame)
+        self.volume_frame.pack(fill=tk.X, padx=10, pady=10)
+        self.volume_label = ttk.Label(self.volume_frame, text=self.t("volume") + ":")
+        self.volume_label.pack(side=tk.LEFT, padx=5)
+        self.volume_scale = ttk.Scale(self.volume_frame, from_=0, to=100, orient=tk.HORIZONTAL)
+        self.volume_scale.set(100)
+        self.volume_scale.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        
+        self.right_panel = ttk.Frame(self.content_frame)
+        self.right_panel.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        self.preview_outer_frame = ttk.Frame(self.right_panel)
+        self.preview_outer_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+
+        self.preview_frame = ttk.LabelFrame(self.preview_outer_frame, text=self.t("preview"))
+        self.preview_frame.pack(fill=tk.BOTH, expand=True, padx=5)
+
+        self.preview_container = ttk.Frame(self.preview_frame)
+        self.preview_container.pack(fill=tk.BOTH, expand=True)
+
+        self.preview_label = ttk.Label(self.preview_container)
+        self.preview_label.pack(anchor=tk.CENTER)
+
+        self.controls_frame = ttk.LabelFrame(self.right_panel, text=self.t("controls"), height=150)
+        self.controls_frame.pack(fill=tk.X, padx=5, pady=5)
+        self.controls_frame.pack_propagate(False)
+
+        self.main_buttons_frame = ttk.Frame(self.controls_frame)
+        self.main_buttons_frame.pack(fill=tk.X, padx=5, pady=5)
+
+        self.toggle_btn_frame = ttk.Frame(self.main_buttons_frame, width=160, height=35)
+        self.toggle_btn_frame.pack(side=tk.LEFT, padx=5, pady=5)
+        self.toggle_btn_frame.pack_propagate(False)
+
+        self.preview_btn_frame = ttk.Frame(self.main_buttons_frame, width=160, height=35)
+        self.preview_btn_frame.pack(side=tk.LEFT, padx=5, pady=5)
+        self.preview_btn_frame.pack_propagate(False)
+
+        self.select_area_btn_frame = ttk.Frame(self.main_buttons_frame, width=160, height=35)
+        self.select_area_btn_frame.pack(side=tk.LEFT, padx=5, pady=5)
+        self.select_area_btn_frame.pack_propagate(False)
+
+        self.toggle_btn = ttk.Button(self.toggle_btn_frame, text=self.t("start_recording"), 
+                                command=self.toggle_recording, style="Accent.TButton")
+        self.toggle_btn.pack(fill=tk.BOTH, expand=True)
+
+        self.preview_btn = ttk.Button(self.preview_btn_frame, text=self.t("start_preview"), 
+                                    command=self.toggle_preview_monitor)
+        self.preview_btn.pack(fill=tk.BOTH, expand=True)
+
+        self.select_area_btn = ttk.Button(self.select_area_btn_frame, text=self.t("select_recording_area"), 
+                                        command=self.select_area)
+        self.select_area_btn.pack(fill=tk.BOTH, expand=True)
+
+        self.extra_buttons_frame = ttk.Frame(self.controls_frame)
+        self.extra_buttons_frame.pack(fill=tk.X, padx=5, pady=5)
+
+        self.folder_btn_frame = ttk.Frame(self.extra_buttons_frame, width=245, height=35)
+        self.folder_btn_frame.pack(side=tk.LEFT, padx=5, pady=5)
+        self.folder_btn_frame.pack_propagate(False)
+
+        self.info_btn_frame = ttk.Frame(self.extra_buttons_frame, width=245, height=35)
+        self.info_btn_frame.pack(side=tk.LEFT, padx=5, pady=5)
+        self.info_btn_frame.pack_propagate(False)
+
+        self.open_folder_btn = ttk.Button(self.folder_btn_frame, text=self.t("open_output_folder"), 
+                                        command=self.open_output_folder)
+        self.open_folder_btn.pack(fill=tk.BOTH, expand=True)
+
+        self.info_btn = ttk.Button(self.info_btn_frame, text=self.t("about"), 
+                                command=self.show_info)
+        self.info_btn.pack(fill=tk.BOTH, expand=True)
+        
+        self.bottom_panel = ttk.Frame(self.main_frame)
+        self.bottom_panel.pack(side=tk.BOTTOM, fill=tk.X, padx=5, pady=5)
+        
+        self.timer_label = ttk.Label(self.bottom_panel, text="00:00:00")
+        self.timer_label.pack(side=tk.LEFT, padx=20, pady=5)
+        self.timer_label.config(font=("Arial", 12, "bold"))
+        
+        self.status_label = ttk.Label(self.bottom_panel, text=self.t("status_ready"))
+        self.status_label.pack(side=tk.RIGHT, padx=20, pady=5)
+        self.status_label.config(font=("Arial", 10))
+
+        style = ttk.Style()
+        style.configure("Accent.TButton")
+        style.configure("Stop.TButton", background="#d9534f", foreground="white")
+        style.map("Stop.TButton", background=[('active', '#c9302c')], foreground=[('active', 'white')])
+        
+        self.root.minsize(950, 600)
+    
     @abc.abstractmethod
     def get_audio_devices(self):
         pass
@@ -303,15 +389,44 @@ class ScreenRecorderBase(abc.ABC):
                     
                     if monitor_index < len(sct.monitors) - 1:
                         monitor = sct.monitors[monitor_index + 1]
+                        
+                        if self.record_area:
+                            x1, y1, x2, y2 = self.record_area
+                            monitor = {
+                                "left": x1 + monitor.get("left", 0),
+                                "top": y1 + monitor.get("top", 0),
+                                "width": x2 - x1,
+                                "height": y2 - y1
+                            }
                     else:
-                        return
+                        monitor = sct.monitors[0]
 
                     screenshot = np.array(sct.grab(monitor))
                     screenshot = cv2.cvtColor(screenshot, cv2.COLOR_RGBA2RGB)
                     screenshot = cv2.cvtColor(screenshot, cv2.COLOR_BGR2RGB)
 
-                    max_size = (400, 240)
-                    screenshot = cv2.resize(screenshot, max_size, interpolation=cv2.INTER_AREA)
+                    try:
+                        self.root.update_idletasks()
+                        
+                        preview_width = self.preview_frame.winfo_width() - 30 
+                        preview_height = self.preview_frame.winfo_height() - 30
+                        
+                        if preview_width > 50 and preview_height > 50:
+                            src_aspect = screenshot.shape[1] / screenshot.shape[0]
+                            
+                            if src_aspect > preview_width / preview_height:
+                                new_width = preview_width
+                                new_height = int(new_width / src_aspect)
+                            else: 
+                                new_height = preview_height
+                                new_width = int(new_height * src_aspect)
+
+                            screenshot = cv2.resize(screenshot, (new_width, new_height), interpolation=cv2.INTER_AREA)
+                        else:
+                            screenshot = cv2.resize(screenshot, (400, 225), interpolation=cv2.INTER_AREA)
+                            
+                    except (tk.TclError, AttributeError) as e:
+                        screenshot = cv2.resize(screenshot, (400, 225), interpolation=cv2.INTER_AREA)
 
                     image = Image.fromarray(screenshot)
                     tk_image = ImageTk.PhotoImage(image=image)
@@ -319,9 +434,12 @@ class ScreenRecorderBase(abc.ABC):
                     if self.preview_label and self.preview_label.winfo_exists():
                         self.root.after(0, self._update_preview_label, tk_image)
 
-                    time.sleep(0.03)
+                    time.sleep(0.033)
                 except tk.TclError:
                     break
+                except Exception as e:
+                    self.logger.error(f"Error en la vista previa: {e}")
+                    time.sleep(1)
                 
     def _update_preview_label(self, tk_image):
         if self.preview_running:
@@ -448,12 +566,27 @@ class ScreenRecorderBase(abc.ABC):
         self.codec_combo.config(state=readonly_state)
         self.format_combo.config(state=readonly_state)
         self.audio_combo.config(state=readonly_state)
-        self.volume_scale.config(state=state)
-        self.select_area_btn.config(state=state)
+        self.monitor_combo.config(state=readonly_state)
         self.language_combo.config(state=readonly_state)
         self.theme_combo.config(state=readonly_state)
 
-        self.toggle_btn.config(text=self.t("stop_recording") if recording else self.t("start_recording"))
+        self.volume_scale.config(state=state)
+        self.select_area_btn.config(state=state)
+        self.preview_btn.config(state=state)
+        self.open_folder_btn.config(state=state)
+        self.info_btn.config(state=state)
+
+        self.toggle_btn.config(
+            text=self.t("stop_recording") if recording else self.t("start_recording"),
+            style="Stop.TButton" if recording else "Accent.TButton"
+        )
+        
+        if recording:
+            style = ttk.Style()
+            style.configure("Stop.TButton", background="#d9534f", foreground="white")
+            style.map("Stop.TButton", background=[('active', '#c9302c')], foreground=[('active', 'white')])
+        
+        self.status_label.config(text=self.t("status_recording") if recording else self.t("status_ready"))
         
     @abc.abstractmethod
     def open_output_folder(self):
