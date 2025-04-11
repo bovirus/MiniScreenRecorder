@@ -10,12 +10,12 @@ An open-source screen and audio recorder for **Windows** and **Linux**, written 
 
 ## 🎯 Features
 
-- Select light/dark theme
+- Multiple themes to customize the look and feel of the app
 - Set frame rate and bitrate
 - Choose video codec
 - Select output format (mp4, mkv)
-- Select audio input device
-- Select screen area or full screen
+- Select audio input or output device
+- Select screen area or full screen to record
 - Multi-monitor support
 - Multi-language support
 
@@ -23,7 +23,7 @@ An open-source screen and audio recorder for **Windows** and **Linux**, written 
 
 ## 🎥 Video Demo
 
-Simple gameplay recorded using this app.  
+Simple gameplay recorded using this app (Just a demo, this app is not made to record gameplays).  
 Click below to watch:
 
 [![Watch on YouTube](https://img.shields.io/badge/YouTube-Watch%20Video-red?style=for-the-badge&logo=youtube)](https://youtu.be/7Ji-maVmPac)
@@ -42,7 +42,7 @@ python app.py
 
 ## 💻 Requirements
 
-You need **Python 3.x** and **FFmpeg** installed, along with some additional libraries.
+You need **Python 3.x** and **FFmpeg** installed, along with some additional libraries. The Windows version already comes with ffmpeg, you don't need to do anything. For the Linux version you must install ffmpeg.
 
 > `miniscreenrecorder.py` and `miniscreenrecorderLinux.py` are optional helpers that display platform-specific warnings.
 
