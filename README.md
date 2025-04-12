@@ -40,19 +40,15 @@ python app.py
 
 ---
 
-## 💻 Requirements
+### 💻 Requirements
 
 You need **Python 3.x** and **FFmpeg** installed, along with some additional libraries. The Windows version already comes with ffmpeg, you don't need to do anything. For the Linux version you must install ffmpeg.
 
-> `miniscreenrecorder.py` and `miniscreenrecorderLinux.py` are optional helpers that display platform-specific warnings.
-
 ---
 
-### 🪟 Windows
+### 💻 Windows
 
-If you're using the packaged `.exe` from the [Releases](https://github.com/Lextrack/MiniScreenRecorder/releases), you **don't need to install anything** — Python, FFmpeg, and all dependencies are bundled.
-
-If you're running the source code, install Python first, then install the dependencies:
+To run it from source, install Python first, then install the dependencies (in a virtual environment or not):
 
 ```bash
 pip install pillow mss numpy opencv-python screeninfo
