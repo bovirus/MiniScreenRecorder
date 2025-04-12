@@ -34,7 +34,6 @@ class ScreenRecorderBase(abc.ABC):
         self.root.title("Mini Screen Recorder")
         
         self.root.geometry("900x600")
-        self.root.minsize(800, 500)
 
         self.config = ConfigParser()
         self.config_file = 'config.ini'
@@ -566,13 +565,11 @@ class ScreenRecorderBase(abc.ABC):
         self.codec_combo.config(state=readonly_state)
         self.format_combo.config(state=readonly_state)
         self.audio_combo.config(state=readonly_state)
-        self.monitor_combo.config(state=readonly_state)
         self.language_combo.config(state=readonly_state)
         self.theme_combo.config(state=readonly_state)
 
         self.volume_scale.config(state=state)
         self.select_area_btn.config(state=state)
-        self.preview_btn.config(state=state)
         self.open_folder_btn.config(state=state)
         self.info_btn.config(state=state)
 

@@ -147,13 +147,13 @@ class WindowsRecorder(ScreenRecorderBase):
             ffmpeg_args.extend([
                 "-c:v", "libx264",
                 "-preset", "veryfast",
-                "-b:v", bitrate,
+                "-x264-params", f"bitrate={bitrate.rstrip('k')}:vbv-maxrate={bitrate.rstrip('k')}:vbv-bufsize={int(int(bitrate.rstrip('k'))/2)}:nal-hrd=cbr",
             ])
         elif codec == "libx265":
             ffmpeg_args.extend([
                 "-c:v", "libx265",
-                "-preset", "medium",
-                "-b:v", bitrate,
+                "-preset", "fast",
+                "-x265-params", f"bitrate={int(bitrate.rstrip('k'))}:vbv-maxrate={int(bitrate.rstrip('k'))}:vbv-bufsize={int(int(bitrate.rstrip('k'))/2)}:rc-lookahead=20:cbqpoffs=0:crqpoffs=0:crf=23",
             ])
         else:
             ffmpeg_args.extend([
