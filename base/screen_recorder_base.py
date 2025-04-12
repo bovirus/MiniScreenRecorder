@@ -292,9 +292,12 @@ class ScreenRecorderBase(abc.ABC):
         self.preview_label = ttk.Label(self.preview_container)
         self.preview_label.pack(anchor=tk.CENTER)
 
-        self.controls_frame = ttk.LabelFrame(self.right_panel, text=self.t("controls"), height=150)
-        self.controls_frame.pack(fill=tk.X, padx=5, pady=5)
-        self.controls_frame.pack_propagate(False)
+        self.controls_spacer = ttk.Frame(self.right_panel, height=165)
+        self.controls_spacer.pack(side=tk.BOTTOM, fill=tk.X)
+        self.controls_spacer.pack_propagate(False)
+
+        self.controls_frame = ttk.LabelFrame(self.controls_spacer, text=self.t("controls"))
+        self.controls_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
         self.main_buttons_frame = ttk.Frame(self.controls_frame)
         self.main_buttons_frame.pack(fill=tk.X, padx=5, pady=5)
@@ -407,22 +410,22 @@ class ScreenRecorderBase(abc.ABC):
                     try:
                         self.root.update_idletasks()
                         
-                        preview_width = self.preview_frame.winfo_width() - 30 
-                        preview_height = self.preview_frame.winfo_height() - 30
+                        max_available_height = self.right_panel.winfo_height() - self.controls_spacer.winfo_height() - 50
                         
-                        if preview_width > 50 and preview_height > 50:
-                            src_aspect = screenshot.shape[1] / screenshot.shape[0]
+                        if max_available_height > 100:
+                            aspect_ratio = screenshot.shape[1] / screenshot.shape[0]
+                            max_width = self.preview_frame.winfo_width() - 20 
                             
-                            if src_aspect > preview_width / preview_height:
-                                new_width = preview_width
-                                new_height = int(new_width / src_aspect)
-                            else: 
-                                new_height = preview_height
-                                new_width = int(new_height * src_aspect)
-
-                            screenshot = cv2.resize(screenshot, (new_width, new_height), interpolation=cv2.INTER_AREA)
+                            preview_height = min(max_available_height, screenshot.shape[0])
+                            preview_width = int(preview_height * aspect_ratio)
+                            
+                            if preview_width > max_width:
+                                preview_width = max_width
+                                preview_height = int(preview_width / aspect_ratio)
+                            
+                            screenshot = cv2.resize(screenshot, (preview_width, preview_height), interpolation=cv2.INTER_AREA)
                         else:
-                            screenshot = cv2.resize(screenshot, (400, 225), interpolation=cv2.INTER_AREA)
+                            screenshot = cv2.resize(screenshot, (320, 180), interpolation=cv2.INTER_AREA)
                             
                     except (tk.TclError, AttributeError) as e:
                         screenshot = cv2.resize(screenshot, (400, 225), interpolation=cv2.INTER_AREA)
@@ -433,12 +436,12 @@ class ScreenRecorderBase(abc.ABC):
                     if self.preview_label and self.preview_label.winfo_exists():
                         self.root.after(0, self._update_preview_label, tk_image)
 
-                    time.sleep(0.033)
+                    time.sleep(0.02)
                 except tk.TclError:
                     break
                 except Exception as e:
                     self.logger.error(f"Error en la vista previa: {e}")
-                    time.sleep(1)
+                    time.sleep(1)  
                 
     def _update_preview_label(self, tk_image):
         if self.preview_running:
