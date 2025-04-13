@@ -170,9 +170,35 @@ class ScreenRecorderBase(abc.ABC):
         if new_language != self.translation_manager.language:
             self.translation_manager.change_language(new_language)
             self.save_config()
-            messagebox.showinfo(self.t("language_change"), self.t("warning_change_lang"))
-            self.root.destroy()
-            os.execl(sys.executable, sys.executable, *sys.argv)
+            self.update_ui_texts()
+            messagebox.showinfo(self.t("language_change"), self.t("language_changed_success"))
+
+    def update_ui_texts(self):
+        self.top_panel.configure(text=self.t("app_settings"))
+        self.monitor_frame.configure(text=self.t("monitor"))
+        self.video_settings_frame.configure(text=self.t("video_settings"))
+        self.audio_settings_frame.configure(text=self.t("audio_settings"))
+        self.preview_frame.configure(text=self.t("preview"))
+        self.controls_frame.configure(text=self.t("controls"))
+        
+        self.language_label.configure(text=self.t("Language") + ":")
+        self.theme_label.configure(text=self.t("theme") + ":")
+        self.fps_label.configure(text=self.t("framerate") + ":")
+        self.bitrate_label.configure(text=self.t("bitrate") + ":")
+        self.codec_label.configure(text=self.t("video_codec") + ":")
+        self.format_label.configure(text=self.t("output_format") + ":")
+        self.audio_label.configure(text=self.t("audio_device") + ":")
+        self.volume_label.configure(text=self.t("volume") + ":")
+        self.output_settings_frame.configure(text=self.t("output_settings"))
+        self.output_folder_label.configure(text=self.t("output_folder") + ":")
+        
+        self.toggle_btn.configure(text=self.t("start_recording") if not self.running else self.t("stop_recording"))
+        self.preview_btn.configure(text=self.t("start_preview") if not self.preview_running else self.t("stop_preview"))
+        self.select_area_btn.configure(text=self.t("select_recording_area"))
+        self.open_folder_btn.configure(text=self.t("open_output_folder"))
+        self.info_btn.configure(text=self.t("about"))
+        
+        self.status_label.configure(text=self.t("status_recording") if self.running else self.t("status_ready"))
 
     def init_ui(self):
         self.main_frame = ttk.Frame(self.root)
@@ -318,7 +344,7 @@ class ScreenRecorderBase(abc.ABC):
 
         self.controls_spacer = ttk.Frame(self.right_panel, height=165)
         self.controls_spacer.pack(side=tk.BOTTOM, fill=tk.X)
-        self.controls_spacer.pack_propagate(False)
+
 
         self.controls_frame = ttk.LabelFrame(self.controls_spacer, text=self.t("controls"))
         self.controls_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
@@ -328,15 +354,15 @@ class ScreenRecorderBase(abc.ABC):
 
         self.toggle_btn_frame = ttk.Frame(self.main_buttons_frame, width=160, height=35)
         self.toggle_btn_frame.pack(side=tk.LEFT, padx=5, pady=5)
-        self.toggle_btn_frame.pack_propagate(False)
+        
 
         self.preview_btn_frame = ttk.Frame(self.main_buttons_frame, width=160, height=35)
         self.preview_btn_frame.pack(side=tk.LEFT, padx=5, pady=5)
-        self.preview_btn_frame.pack_propagate(False)
+        
 
         self.select_area_btn_frame = ttk.Frame(self.main_buttons_frame, width=160, height=35)
         self.select_area_btn_frame.pack(side=tk.LEFT, padx=5, pady=5)
-        self.select_area_btn_frame.pack_propagate(False)
+        
 
         self.toggle_btn = ttk.Button(self.toggle_btn_frame, text=self.t("start_recording"), 
                                 command=self.toggle_recording, style="Accent.TButton")
@@ -460,7 +486,7 @@ class ScreenRecorderBase(abc.ABC):
                     if self.preview_label and self.preview_label.winfo_exists():
                         self.root.after(0, self._update_preview_label, tk_image)
 
-                    time.sleep(0.02)
+                    time.sleep(0.03)
                 except tk.TclError:
                     break
                 except Exception as e:
