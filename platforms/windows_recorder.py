@@ -136,7 +136,7 @@ class WindowsRecorder(ScreenRecorderBase):
             "-i", "desktop",
             "-f", "dshow",
             "-i", f"audio={audio_device}",
-            "-filter:a", f"volume={volume/100}",
+            "-filter:a", f"volume={volume/150}",
             "-threads", "0",
             "-pix_fmt", "yuv420p",
             "-loglevel", "info",
@@ -152,7 +152,7 @@ class WindowsRecorder(ScreenRecorderBase):
         elif codec == "libx265":
             ffmpeg_args.extend([
                 "-c:v", "libx265",
-                "-preset", "fast",
+                "-preset", "ultrafast",
                 "-x265-params", f"bitrate={int(bitrate.rstrip('k'))}:vbv-maxrate={int(bitrate.rstrip('k'))}:vbv-bufsize={int(int(bitrate.rstrip('k'))/2)}:rc-lookahead=20:cbqpoffs=0:crqpoffs=0:crf=23",
             ])
         else:

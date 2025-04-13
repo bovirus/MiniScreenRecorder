@@ -115,7 +115,8 @@ class ScreenRecorderBase(abc.ABC):
             'bitrate': self.bitrate_combo.current(),
             'codec': self.codec_combo.current(),
             'format': self.format_combo.current(),
-            'audio': self.audio_combo.current()
+            'audio': self.audio_combo.current(),
+            'output_folder': self.output_folder
         }
         with open(self.config_file, 'w') as configfile:
             self.config.write(configfile)
@@ -132,10 +133,14 @@ class ScreenRecorderBase(abc.ABC):
                 'bitrate': 0,
                 'codec': 0,
                 'format': 0,
-                'audio': 0
+                'audio': 0,
+                'output_folder': os.path.join(os.getcwd(), "OutputFiles")
             }
             with open(self.config_file, 'w') as configfile:
                 self.config.write(configfile)
+        
+        self.output_folder = self.config.get('Settings', 'output_folder', 
+                                        fallback=os.path.join(os.getcwd(), "OutputFiles"))
                 
     def change_language(self, event=None):
         selected_language = self.language_combo.get()
@@ -276,6 +281,25 @@ class ScreenRecorderBase(abc.ABC):
         self.volume_scale = ttk.Scale(self.volume_frame, from_=0, to=100, orient=tk.HORIZONTAL)
         self.volume_scale.set(100)
         self.volume_scale.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+
+        self.output_settings_frame = ttk.LabelFrame(self.left_panel, text=self.t("output_settings"))
+        self.output_settings_frame.pack(fill=tk.X, padx=10, pady=5)
+        
+        self.output_folder_frame = ttk.Frame(self.output_settings_frame)
+        self.output_folder_frame.pack(fill=tk.X, padx=10, pady=5)
+        
+        self.output_folder_label = ttk.Label(self.output_folder_frame, text=self.t("output_folder") + ":")
+        self.output_folder_label.pack(side=tk.LEFT, padx=5)
+        
+        self.output_folder_var = tk.StringVar()
+        self.output_folder_var.set(self.output_folder)
+        
+        self.output_folder_entry = ttk.Entry(self.output_folder_frame, textvariable=self.output_folder_var, width=30)
+        self.output_folder_entry.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        
+        self.browse_folder_btn = ttk.Button(self.output_folder_frame, text="...", width=3,
+                                        command=self.browse_output_folder)
+        self.browse_folder_btn.pack(side=tk.LEFT, padx=5)
         
         self.right_panel = ttk.Frame(self.content_frame)
         self.right_panel.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=5, pady=5)
@@ -463,6 +487,20 @@ class ScreenRecorderBase(abc.ABC):
                 self.root.destroy()
         else:
             self.root.destroy()
+
+    def browse_output_folder(self):
+        from tkinter import filedialog
+        
+        new_folder = filedialog.askdirectory(
+            title=self.t("select_output_folder"),
+            initialdir=self.output_folder
+        )
+        
+        if new_folder:
+            self.output_folder = new_folder
+            self.output_folder_var.set(new_folder)
+            self.save_config()
+            self.create_output_folder()
             
     def on_monitor_change(self, event=None):
         if self.running:
@@ -508,7 +546,9 @@ class ScreenRecorderBase(abc.ABC):
             self.toggle_btn.config(text=self.t("start_recording"))
             
     def create_output_folder(self):
-        self.output_folder = os.path.join(os.getcwd(), "OutputFiles")
+        if not hasattr(self, 'output_folder') or not self.output_folder:
+            self.output_folder = os.path.join(os.getcwd(), "OutputFiles")
+        
         if not os.path.exists(self.output_folder):
             os.makedirs(self.output_folder)
             
