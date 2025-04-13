@@ -636,11 +636,13 @@ class ScreenRecorderBase(abc.ABC):
         self.audio_combo.config(state=readonly_state)
         self.language_combo.config(state=readonly_state)
         self.theme_combo.config(state=readonly_state)
+        self.output_folder_entry.config(state=readonly_state)
 
         self.volume_scale.config(state=state)
         self.select_area_btn.config(state=state)
         self.open_folder_btn.config(state=state)
         self.info_btn.config(state=state)
+        self.browse_folder_btn.config(state=state)
 
         self.toggle_btn.config(
             text=self.t("stop_recording") if recording else self.t("start_recording"),
